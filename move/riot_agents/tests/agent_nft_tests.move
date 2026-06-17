@@ -1,97 +1,105 @@
+/// RIOT Agents — Unit Tests
+
 #[test_only]
 module riot_agents::agent_nft_tests {
-    use sui::test_scenario;
-    use riot_agents::agent_nft::{Self, AgentNFT};
     use std::string;
-    use std::vector;
     use sui::coin;
+    use sui::sui::SUI;
+    use sui::test_scenario::{Self, Scenario};
+    use riot_agents::agent_nft;
 
-    const MINT_PRICE: u64 = 1_000_000_000;
+    const ONE_SUI: u64 = 1_000_000_000;
 
     #[test]
-    fun test_mint_creates_valid_agent() {
-        let mut scenario = test_scenario::begin(@0xA11CE);
-        let ctx = scenario.ctx();
+    fun test_mint_agent() {
+        let mut scenario = test_scenario::begin(@0xA);
+        let clock = scenario.clock();
 
-        let coin = coin::mint_for_testing<MINT_PRICE>(ctx);
-        let agent_id = string::utf8(b"J4");
-        let soul_hash = x"deadbeefcafebabe1234567890abcdef1234567890abcdef1234567890abcdef";
+        // Create payment coin
+        let coin = coin::mint_for_testing<SUI>(ONE_SUI, scenario.ctx());
 
-        agent_nft::mint_agent(coin, agent_id, soul_hash, ctx);
+        // Mint agent
+        {
+            agent_nft::mint_agent(
+                coin,
+                string::utf8(b"J4"),
+                x"abcdef1234567890",
+                &clock,
+                scenario.ctx(),
+            );
+        };
 
-        scenario.next_tx(@0xA11CE);
+        // Verify agent owned by @0xA
+        let agent = scenario.take_owned<agent_nft::AgentNFT>(@0xA);
+        assert!(agent_nft::get_agent_id(&agent) == &string::utf8(b"J4"));
+        assert!(agent_nft::get_evolution_count(&agent) == 0);
+        assert!(agent_nft::get_owner(&agent) == @0xA);
 
-        let agent: AgentNFT = scenario.take_from_sender<AgentNFT>();
-
-        assert!(*agent_nft::agent_id(&agent) == string::utf8(b"J4"), 0);
-        assert!(agent_nft::get_evolution_count(&agent) == 0, 1);
-        assert!(vector::length(agent_nft::soul_hash(&agent)) == 32, 2);
-
-        scenario.return_to_sender(agent)
+        test_scenario::return_owned(scenario, agent);
+        test_scenario::end(scenario);
     }
 
     #[test]
-    fun test_immortalize_increments_evolution_count() {
-        let mut scenario = test_scenario::begin(@0xB0B);
-        let ctx = scenario.ctx();
+    fun test_immortalize_memory() {
+        let mut scenario = test_scenario::begin(@0xA);
+        let clock = scenario.clock();
 
-        let coin = coin::mint_for_testing<MINT_PRICE>(ctx);
-        agent_nft::mint_agent(coin, string::utf8(b"J1"), x"aa", ctx);
+        let coin = coin::mint_for_testing<SUI>(ONE_SUI, scenario.ctx());
 
-        scenario.next_tx(@0xB0B);
+        // Mint
+        agent_nft::mint_agent(coin, string::utf8(b"J4"), x"abcdef", &clock, scenario.ctx());
 
-        let mut agent: AgentNFT = scenario.take_from_sender<AgentNFT>();
-        assert!(agent_nft::get_evolution_count(&agent) == 0, 10);
-
+        // Immortalize
+        let mut agent = scenario.take_owned<agent_nft::AgentNFT>(@0xA);
         agent_nft::immortalize_memory(
             &mut agent,
-            string::utf8(b"blob_001"),
-            x"txhash_001",
-            scenario.ctx()
+            string::utf8(b"blob_abc123"),
+            x"deadbeef",
+            &clock,
         );
+        assert!(agent_nft::get_evolution_count(&agent) == 1);
 
-        assert!(agent_nft::get_evolution_count(&agent) == 1, 11);
-
-        agent_nft::immortalize_memory(
-            &mut agent,
-            string::utf8(b"blob_002"),
-            x"txhash_002",
-            scenario.ctx()
-        );
-
-        assert!(agent_nft::get_evolution_count(&agent) == 2, 12);
-
-        scenario.return_to_sender(agent)
+        test_scenario::return_owned(scenario, agent);
+        test_scenario::end(scenario);
     }
 
     #[test]
-    fun test_event_emission_on_mint() {
-        let mut scenario = test_scenario::begin(@0xEVNT);
-        let ctx = scenario.ctx();
+    #[expected_failure(abort_code = riot_agents::agent_nft::EWrongPrice)]
+    fun test_mint_insufficient_payment() {
+        let mut scenario = test_scenario::begin(@0xA);
+        let clock = scenario.clock();
 
-        let coin = coin::mint_for_testing<MINT_PRICE>(ctx);
-        agent_nft::mint_agent(coin, string::utf8(b"J7"), x"bb", ctx);
+        let coin = coin::mint_for_testing<SUI>(ONE_SUI / 2, scenario.ctx());
+        agent_nft::mint_agent(coin, string::utf8(b"J4"), x"abcdef", &clock, scenario.ctx());
 
-        scenario.next_tx(@0xEVNT);
-
-        let _: AgentNFT = scenario.take_from_sender<AgentNFT>();
-        scenario.return_to_sender(_);
-
-        scenario.next_tx(@0xEVNT);
-
-        let emitted_soul_minted = scenario::event::<riot_agents::events::SoulMinted>(&scenario);
-        assert!(emitted_soul_minted.agent_id == string::utf8(b"J7"), 20)
+        test_scenario::end(scenario);
     }
 
     #[test]
-    #[expected_failure(abort_code = riot_agents::agent_nft::EMintPriceInsufficient)]
-    fun test_insufficient_payment_fails() {
-        let mut scenario = test_scenario::begin(@0xCHEAP);
-        let ctx = scenario.ctx();
+    fun test_multiple_mints_and_evolutions() {
+        let mut scenario = test_scenario::begin(@0xA);
+        let clock = scenario.clock();
 
-        let coin = coin::mint_for_testing(100)(ctx);
-        agent_nft::mint_agent(coin, string::utf8(b"J99"), x"cc", ctx);
+        // Mint J4
+        let coin1 = coin::mint_for_testing<SUI>(ONE_SUI, scenario.ctx());
+        agent_nft::mint_agent(coin1, string::utf8(b"J4"), x"aaa", &clock, scenario.ctx());
 
-        abort 99
+        // Mint J1
+        let coin2 = coin::mint_for_testing<SUI>(ONE_SUI, scenario.ctx());
+        agent_nft::mint_agent(coin2, string::utf8(b"J1"), x"bbb", &clock, scenario.ctx());
+
+        // Immortalize J4 twice
+        let mut j4 = scenario.take_owned<agent_nft::AgentNFT>(@0xA);
+        agent_nft::immortalize_memory(&mut j4, string::utf8(b"blob1"), x"1111", &clock);
+        agent_nft::immortalize_memory(&mut j4, string::utf8(b"blob2"), x"2222", &clock);
+        assert!(agent_nft::get_evolution_count(&j4) == 2);
+        test_scenario::return_owned(scenario, j4);
+
+        // J1 should have 0 evolutions
+        let j1 = scenario.take_owned<agent_nft::AgentNFT>(@0xA);
+        assert!(agent_nft::get_evolution_count(&j1) == 0);
+        test_scenario::return_owned(scenario, j1);
+
+        test_scenario::end(scenario);
     }
 }

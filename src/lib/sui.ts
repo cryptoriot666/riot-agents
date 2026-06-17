@@ -14,7 +14,7 @@ export const suiClient = new SuiJsonRpcClient({
   network: 'mainnet',
 })
 
-const PACKAGE_ID = process.env.NEXT_PUBLIC_RIOT_PACKAGE_ID || '0x0'
+const PACKAGE_ID = process.env.NEXT_PUBLIC_RIOT_PACKAGE_ID || '0xae8d59bff9c4d19c82e4058d747c03308db2c02e6a6288c9977c82df1a0cc820'
 const MINT_PRICE = 1_000_000_000n
 
 export interface MintResult {
