@@ -1,7 +1,7 @@
 /**
- * GLM Chat Client — AI Inference Layer
+ * AI Chat Client — AI Inference Layer
  *
- * Powers agent personalities via GLM-4.5-Air through z.ai API.
+ * Powers agent personalities via AI-4.5-Air through DeepSeek API.
  *
  * Memory flow (Walrus Memory SDK):
  * 1. BEFORE chat → recall() fetches relevant past conversations
@@ -27,8 +27,8 @@ export interface ChatResponse {
   tokenUsage: TokenUsage
 }
 
-const ZAI_ENDPOINT = 'https://api.z.ai/api/paas/v4/chat/completions'
-const MODEL = 'glm-4.5-air'
+const AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
+const MODEL = 'deepseek-chat'
 const MAX_RETRIES = 3
 const TOKEN_BUDGET = 8192
 
@@ -63,20 +63,20 @@ async function fetchWithRetry(
 
     if (res.status === 401) {
       throw new Error(
-        'ZAI_API_KEY invalid or missing credits at https://z.ai/manage-apikey/billing'
+        'DEEPSEEK_API_KEY invalid or missing credits at https://DeepSeek/manage-apikey/billing'
       )
     }
 
     if (res.status === 429 && i < attempts - 1) {
       const waitMs = 2000 * Math.pow(2, i)
-      console.log(`[GLM] Rate limited. Retrying in ${waitMs}ms... (${i + 1}/${attempts})`)
+      console.log(`[AI] Rate limited. Retrying in ${waitMs}ms... (${i + 1}/${attempts})`)
       await new Promise((r) => setTimeout(r, waitMs))
       continue
     }
 
     if (!res.ok && i < attempts - 1) {
       const waitMs = 1000 * Math.pow(2, i)
-      console.log(`[GLM] HTTP ${res.status}. Retrying in ${waitMs}ms... (${i + 1}/${attempts})`)
+      console.log(`[AI] HTTP ${res.status}. Retrying in ${waitMs}ms... (${i + 1}/${attempts})`)
       await new Promise((r) => setTimeout(r, waitMs))
       continue
     }
@@ -127,11 +127,11 @@ async function buildMemoryContext(
           recalledMemories.push(r.text)
         }
         console.log(
-          `[GLM] Walrus Memory recall: ${results.length} memories for ${agent.id}`
+          `[AI] Walrus Memory recall: ${results.length} memories for ${agent.id}`
         )
       }
     } catch (e) {
-      console.warn('[GLM] MemWal recall failed, trying legacy Walrus:', e)
+      console.warn('[AI] MemWal recall failed, trying legacy Walrus:', e)
     }
   }
 
@@ -142,9 +142,9 @@ async function buildMemoryContext(
       const stored = await retrieveMemory(blobId, encryptionKey)
       conversationHistory = stored as ChatMessage[]
       hasMemory = true
-      console.log('[GLM] Legacy Walrus retrieval: loaded conversation history')
+      console.log('[AI] Legacy Walrus retrieval: loaded conversation history')
     } catch (e) {
-      console.warn('[GLM] Legacy Walrus retrieval failed:', e)
+      console.warn('[AI] Legacy Walrus retrieval failed:', e)
     }
   }
 
@@ -164,8 +164,8 @@ export async function chat(
     onStore?: (blobId: string) => void
   }
 ): Promise<ChatResponse> {
-  const apiKey = process.env.ZAI_API_KEY
-  if (!apiKey) throw new Error('ZAI_API_KEY not set in environment')
+  const apiKey = process.env.DEEPSEEK_API_KEY
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not set in environment')
 
   const { getAgentById } = await import('../data/agents')
   const agent = getAgentById(agentId)
@@ -200,8 +200,8 @@ export async function chat(
 
   const trimmedMessages = trimHistoryToBudget(messages)
 
-  // Step 4: Call GLM
-  const response = await fetchWithRetry(ZAI_ENDPOINT, {
+  // Step 4: Call AI
+  const response = await fetchWithRetry(AI_ENDPOINT, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -228,7 +228,7 @@ export async function chat(
   }
 
   console.log(
-    `[GLM] ${agentId} → tokens: ${usage.totalTokens} (in:${usage.promptTokens} out:${usage.completionTokens})`
+    `[AI] ${agentId} → tokens: ${usage.totalTokens} (in:${usage.promptTokens} out:${usage.completionTokens})`
   )
 
   // Step 5: Persist conversation
@@ -246,9 +246,9 @@ export async function chat(
     try {
       const { indexConversation: memwalIndex } = await import('./memwal')
       await memwalIndex(walletAddress, agentId, newTurns)
-      console.log(`[GLM] Conversation indexed to Walrus Memory for ${agentId}`)
+      console.log(`[AI] Conversation indexed to Walrus Memory for ${agentId}`)
     } catch (e) {
-      console.error('[GLM] MemWal index failed:', e)
+      console.error('[AI] MemWal index failed:', e)
     }
   }
 
@@ -259,9 +259,9 @@ export async function chat(
       const fullHistory = [...conversationHistory, ...newTurns]
       const result = await storeMemory(agentId, fullHistory, opts.encryptionKey)
       opts.onStore?.(result.blobId)
-      console.log(`[GLM] Legacy Walrus store: ${result.blobId}`)
+      console.log(`[AI] Legacy Walrus store: ${result.blobId}`)
     } catch (e) {
-      console.error('[GLM] Legacy Walrus store failed:', e)
+      console.error('[AI] Legacy Walrus store failed:', e)
     }
   }
 

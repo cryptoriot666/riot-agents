@@ -47,8 +47,8 @@ function getDb(): Database.Database {
 }
 
 async function legacyEmbed(text: string): Promise<number[]> {
-  const apiKey = process.env.ZAI_API_KEY
-  if (!apiKey) throw new Error('ZAI_API_KEY not set')
+  const apiKey = process.env.DEEPSEEK_API_KEY
+  if (!apiKey) throw new Error('DEEPSEEK_API_KEY not set')
 
   const res = await fetch(EMBEDDING_ENDPOINT, {
     method: 'POST',
