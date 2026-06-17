@@ -6,42 +6,29 @@
   --cream: #F4EFE6;
   --ink: #111111;
   --blood: #E63946;
+  --blood-dark: #c62828;
   --highlight: #F4D35E;
+  --highlight-dark: #e6c200;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--cream);
   color: var(--ink);
   font-family: var(--font-plex), 'Courier New', monospace;
-  background-image: url('/textures/paper.svg');
-  background-repeat: repeat;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-::selection {
-  background-color: var(--highlight);
-  color: var(--ink);
-}
+::selection { background-color: var(--highlight); color: var(--ink); }
 
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--cream);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--ink);
-  border-radius: 0;
-}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--cream); }
+::-webkit-scrollbar-thumb { background: var(--ink); border-radius: 0; }
+
+/* ── Utilities ─────────────────────────────────────────────────── */
 
 @layer utilities {
   .text-stroke {
@@ -52,15 +39,9 @@ body {
     -webkit-text-stroke: 1px var(--ink);
     paint-order: stroke fill;
   }
-  .punk-shadow {
-    box-shadow: 4px 4px 0 var(--ink);
-  }
-  .punk-shadow-blood {
-    box-shadow: 4px 4px 0 var(--blood);
-  }
-  .punk-border {
-    border: 3px solid var(--ink);
-  }
+  .punk-shadow { box-shadow: 4px 4px 0 var(--ink); }
+  .punk-shadow-blood { box-shadow: 4px 4px 0 var(--blood); }
+  .punk-border { border: 3px solid var(--ink); }
   .rotate-neg-1 { transform: rotate(-1deg); }
   .rotate-neg-2 { transform: rotate(-2deg); }
   .rotate-neg-3 { transform: rotate(-3deg); }
@@ -69,10 +50,11 @@ body {
   .rotate-3 { transform: rotate(3deg); }
 }
 
-.punk-card {
-  @apply bg-cream punk-border punk-shadow relative overflow-hidden transition-transform duration-200;
-}
+/* ── Components ─────────────────────────────────────────────────── */
 
+.punk-card {
+  @apply bg-cream punk-border punk-shadow relative overflow-hidden transition-all duration-300;
+}
 .punk-card:hover {
   transform: translate(-2px, -2px);
   box-shadow: 6px 6px 0 var(--ink);
@@ -80,9 +62,12 @@ body {
 
 .punk-btn {
   @apply bg-blood text-white font-display text-lg tracking-wider px-6 py-3 
-         uppercase border-3 border-ink cursor-pointer transition-all duration-150
+         uppercase border-3 border-ink cursor-pointer transition-all duration-200
          hover:bg-blood-dark active:translate-x-1 active:translate-y-1
          punk-shadow-blood;
+}
+.punk-btn:active {
+  box-shadow: 2px 2px 0 var(--blood);
 }
 
 .punk-input {
@@ -95,9 +80,9 @@ body {
   padding: 0 4px;
 }
 
-.halftone-overlay {
-  position: relative;
-}
+/* ── Halftone overlay ──────────────────────────────────────────── */
+
+.halftone-overlay { position: relative; }
 .halftone-overlay::after {
   content: '';
   position: absolute;
@@ -109,9 +94,9 @@ body {
   transition: opacity 0.3s;
   pointer-events: none;
 }
-.halftone-overlay:hover::after {
-  opacity: 0.15;
-}
+.halftone-overlay:hover::after { opacity: 0.15; }
+
+/* ── Typing indicator ──────────────────────────────────────────── */
 
 .typing-dot {
   animation: dotPulse 1.4s infinite ease-in-out both;
@@ -119,7 +104,174 @@ body {
 .typing-dot:nth-child(1) { animation-delay: -0.32s; }
 .typing-dot:nth-child(2) { animation-delay: -0.16s; }
 
+/* ── Animations ─────────────────────────────────────────────────── */
+
 @keyframes dotPulse {
   0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
   40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-left {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(230, 57, 70, 0.1); }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes draw-line {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* ── Animation classes ──────────────────────────────────────────── */
+
+.animate-fade-up {
+  animation: fade-up 0.5s ease-out both;
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out both;
+}
+.animate-slide-left {
+  animation: slide-left 0.5s ease-out both;
+}
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out both;
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(244,211,94,0.2) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Staggered animation delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* ── Loading skeleton ───────────────────────────────────────────── */
+
+.skeleton {
+  @apply bg-ink/5 rounded animate-shimmer;
+}
+
+/* ── Glassmorphism ──────────────────────────────────────────────── */
+
+.glass {
+  @apply bg-cream/70 backdrop-blur-md border border-ink/10;
+}
+
+/* ── Glitch text effect ─────────────────────────────────────────── */
+
+.glitch {
+  position: relative;
+}
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.glitch::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--blood);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-1 2s infinite linear alternate-reverse;
+}
+.glitch::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--highlight);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+  0% { clip: rect(30px, 9999px, 40px, 0); }
+  20% { clip: rect(70px, 9999px, 100px, 0); }
+  40% { clip: rect(10px, 9999px, 60px, 0); }
+  60% { clip: rect(80px, 9999px, 120px, 0); }
+  80% { clip: rect(20px, 9999px, 50px, 0); }
+  100% { clip: rect(50px, 9999px, 90px, 0); }
+}
+@keyframes glitch-anim-2 {
+  0% { clip: rect(60px, 9999px, 80px, 0); }
+  20% { clip: rect(40px, 9999px, 70px, 0); }
+  40% { clip: rect(90px, 9999px, 110px, 0); }
+  60% { clip: rect(20px, 9999px, 50px, 0); }
+  80% { clip: rect(70px, 9999px, 100px, 0); }
+  100% { clip: rect(30px, 9999px, 60px, 0); }
+}
+
+/* ── Gradient text ──────────────────────────────────────────────── */
+
+.gradient-text {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(135deg, var(--blood), var(--highlight));
+}
+
+/* ── Line clamp utility ─────────────────────────────────────────── */
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Scroll reveal ──────────────────────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
