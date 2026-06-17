@@ -20,6 +20,10 @@ const plex = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: '$RIOT — A Resurrection Machine for Dead NFTs',
   description: 'Living AI agents on Sui Mainnet. Every NFT gets a soul. Every conversation is immortalized on Walrus.',
+  icons: { icon: '/logo.jpg', apple: '/logo.jpg' },
+  openGraph: {
+    images: ['/logo.jpg'],
+  },
 }
 
 export default function RootLayout({
