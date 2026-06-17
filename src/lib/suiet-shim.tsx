@@ -1,8 +1,11 @@
 "use client";
 
 // Compatibility shim: @suiet/wallet-kit → @suiet/suiet-kit interface
-import { WalletProvider, useWallet as useSuietWallet } from "@suiet/wallet-kit";
+import { WalletProvider, useWallet } from "@suiet/wallet-kit";
 import type { ReactNode } from "react";
+
+// Direct re-export for named imports
+export { useWallet as useSuietWallet, useWallet };
 
 export function SuietProvider({ children }: { children: ReactNode }) {
   return <WalletProvider>{children}</WalletProvider>;
@@ -11,7 +14,7 @@ export function SuietProvider({ children }: { children: ReactNode }) {
 export { SuietProvider as SuietWalletProvider };
 
 export function useSuiet() {
-  const wallet = useSuietWallet();
+  const wallet = useWallet();
   return {
     connected: wallet.connected,
     address: wallet.address ?? null,
@@ -24,5 +27,3 @@ export function useSuiet() {
     wallet,
   };
 }
-
-export { useSuietWallet as useWallet, useSuietWallet };
