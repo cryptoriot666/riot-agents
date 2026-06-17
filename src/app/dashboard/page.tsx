@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSuietWallet } from '@suiet/suiet-kit'
+import { useSuietWallet } from '@/lib/suiet-shim'
 import { WalletButton } from '@/components/WalletButton'
 import { Stamp } from '@/components/Stamp'
 import { Tape } from '@/components/Tape'

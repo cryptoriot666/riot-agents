@@ -1,7 +1,7 @@
 'use client'
 
 interface ChatBubbleProps {
-  role: 'user' | 'agent'
+  role: 'user' | 'agent' | 'system'
   content: string
   agentName?: string
   timestamp?: number

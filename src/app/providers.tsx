@@ -1,6 +1,6 @@
 'use client'
 
-import { SuietWalletProvider } from '@suiet/suiet-kit'
+import { SuietWalletProvider } from '@/lib/suiet-shim'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (

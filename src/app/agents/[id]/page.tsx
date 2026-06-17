@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
-import { useSuietWallet } from '@suiet/suiet-kit'
+import { useSuietWallet } from '@/lib/suiet-shim'
 import { agents, getAgentById } from '@/data/agents'
 import { ChatBubble, TypingIndicator } from '@/components/ChatBubble'
 import { WalletButton } from '@/components/WalletButton'

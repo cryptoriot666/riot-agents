@@ -1,9 +1,9 @@
 'use client'
 
-import { useSuietWallet } from '@suiet/suiet-kit'
+import { useSuiet } from '@/lib/suiet-shim'
 
 export function WalletButton() {
-  const { connected, address, connect, disconnect } = useSuietWallet()
+  const { connected, address, connect, disconnect } = useSuiet()
 
   if (connected && address) {
     const short = `${address.slice(0, 6)}...${address.slice(-4)}`
